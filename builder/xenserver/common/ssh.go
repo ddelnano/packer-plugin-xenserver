@@ -157,8 +157,7 @@ func forward(local_conn net.Conn, config *gossh.ClientConfig, server string, ser
 	return nil
 }
 
-func ssh_port_forward(local_listener net.Listener, remote_port int, remote_dest, host string, host_ssh_port int, username, password string) error {
-
+func ssh_port_forward(local_listener net.Listener, remote_port int, host string, host_ssh_port int, username, password string, remote_dest_func func() (string, error)) error {
 	config := &gossh.ClientConfig{
 		User: username,
 		Auth: []gossh.AuthMethod{
@@ -172,6 +171,12 @@ func ssh_port_forward(local_listener net.Listener, remote_port int, remote_dest,
 
 		if err != nil {
 			log.Printf("Local accept failed: %s", err)
+			return err
+		}
+
+		remote_dest, err := remote_dest_func()
+
+		if err != nil {
 			return err
 		}
 
